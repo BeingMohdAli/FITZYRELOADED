@@ -1,0 +1,19 @@
+# Java / Maven build output
+**/target/
+
+# Config files with local credentials — catches BOTH extensions
+**/src/main/resources/application.yml
+**/src/main/resources/application.yaml
+
+# IDE — this is what was holding your real Gemini key
+.idea/
+*.iml
+.vscode/
+
+# Node / frontend
+node_modules/
+dist/
+
+# OS noise
+.DS_Store
+Thumbs.db
