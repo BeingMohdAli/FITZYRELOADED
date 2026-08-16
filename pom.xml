@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.fitzy</groupId>
+    <artifactId>fitzy-root</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>fitzy-root</name>
+    <description>
+        Aggregator only — NOT a parent POM. Each module below still declares its own
+        real parent (spring-boot-starter-parent) and stays independently buildable/deployable.
+        This just lets `mvn clean install` from here build every module in the correct
+        dependency order in one shot, and gives IntelliJ one project to open.
+    </description>
+
+    <modules>
+        <module>fitzy-common</module>
+        <module>activity-service</module>
+        <module>user-service</module>
+        <module>recommendation-service</module>
+        <module>eureka-server</module>
+        <module>api-gateway</module>
+    </modules>
+</project>

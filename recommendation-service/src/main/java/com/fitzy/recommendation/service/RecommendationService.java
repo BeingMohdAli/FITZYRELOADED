@@ -1,0 +1,60 @@
+package com.fitzy.recommendation.service;
+
+import com.fitzy.common.event.ActivityTrackedEvent;
+import com.fitzy.common.exception.ResourceNotFoundException;
+import com.fitzy.recommendation.client.GeminiClient;
+import com.fitzy.recommendation.client.GeminiGeneratedContent;
+import com.fitzy.recommendation.dto.RecommendationResponse;
+import com.fitzy.recommendation.entity.Recommendation;
+import com.fitzy.recommendation.mapper.RecommendationMapper;
+import com.fitzy.recommendation.repository.RecommendationRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class RecommendationService {
+
+    private final GeminiClient geminiClient;
+    private final RecommendationRepository recommendationRepository;
+    private final RecommendationMapper recommendationMapper;
+
+    public RecommendationResponse generateAndSaveRecommendation(ActivityTrackedEvent event) {
+        log.info("Generating recommendation for activity {}", event.activityId());
+
+        GeminiGeneratedContent content = geminiClient.generateRecommendation(event);
+
+        Recommendation recommendation = new Recommendation();
+        recommendation.setActivityId(event.activityId());
+        recommendation.setUserId(event.userId());
+        recommendation.setSummary(content.summary());
+        recommendation.setImprovements(content.improvements());
+        recommendation.setSuggestions(content.suggestions());
+        recommendation.setSafetyTips(content.safetyTips());
+        recommendation.setCreatedAt(Instant.now());
+
+        Recommendation saved = recommendationRepository.save(recommendation);
+        log.info("Saved recommendation {} for activity {}", saved.getId(), saved.getActivityId());
+
+        return recommendationMapper.toResponse(saved);
+    }
+
+    public RecommendationResponse getRecommendationByActivityId(UUID activityId) {
+        Recommendation recommendation = recommendationRepository.findByActivityId(activityId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No recommendation found for activity " + activityId));
+        return recommendationMapper.toResponse(recommendation);
+    }
+
+    public Page<RecommendationResponse> getRecommendationsForUser(String userId, Pageable pageable) {
+        Page<Recommendation> recommendations = recommendationRepository.findByUserId(userId, pageable);
+        return recommendations.map(recommendationMapper::toResponse);
+    }
+}
