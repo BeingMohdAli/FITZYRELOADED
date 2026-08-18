@@ -1,6 +1,7 @@
 package com.fitzy.recommendation.service;
 
 import com.fitzy.common.event.ActivityTrackedEvent;
+import com.fitzy.common.exception.ExternalServiceException;
 import com.fitzy.common.exception.ResourceNotFoundException;
 import com.fitzy.recommendation.client.GeminiClient;
 import com.fitzy.recommendation.client.GeminiGeneratedContent;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,7 +31,13 @@ public class RecommendationService {
     public RecommendationResponse generateAndSaveRecommendation(ActivityTrackedEvent event) {
         log.info("Generating recommendation for activity {}", event.activityId());
 
-        GeminiGeneratedContent content = geminiClient.generateRecommendation(event);
+        GeminiGeneratedContent content;
+        try {
+            content = geminiClient.generateRecommendation(event);
+        } catch (ExternalServiceException e) {
+            log.error("Gemini unavailable for activity {} — saving a fallback recommendation instead", event.activityId(), e);
+            content = fallbackContent(event);
+        }
 
         Recommendation recommendation = new Recommendation();
         recommendation.setActivityId(event.activityId());
@@ -44,6 +52,17 @@ public class RecommendationService {
         log.info("Saved recommendation {} for activity {}", saved.getId(), saved.getActivityId());
 
         return recommendationMapper.toResponse(saved);
+    }
+
+    private GeminiGeneratedContent fallbackContent(ActivityTrackedEvent event) {
+        return new GeminiGeneratedContent(
+                "Logged your " + event.activityType().toLowerCase().replace("_", " ") + " session — "
+                        + event.durationMinutes() + " min, " + event.caloriesBurnt() + " cal. "
+                        + "Our AI coach couldn't reach its analysis engine this time, so here are some general pointers instead.",
+                List.of("Warm up for 5 minutes before higher-intensity effort", "Cool down and stretch once you're done"),
+                List.of("Aim to repeat this activity a couple more times this week for consistency", "Note how you felt afterward to spot patterns over time"),
+                List.of("Stay hydrated throughout", "Stop and rest if you feel sharp pain or dizziness")
+        );
     }
 
     public RecommendationResponse getRecommendationByActivityId(UUID activityId) {
