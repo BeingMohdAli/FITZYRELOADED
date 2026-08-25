@@ -173,14 +173,7 @@ All requests go through the gateway at `http://localhost:8080`, with `Authorizat
 
 ---
 
-## Known limitations
 
-Documented deliberately rather than glossed over:
-
-- No automated tests yet
-- No Flyway/versioned migrations — schema managed via `ddl-auto: update`
-- No Docker Compose — services currently run individually
-- Failed Gemini generations that exhaust retries fall back to a canned response rather than being retried later
 
 ---
 
