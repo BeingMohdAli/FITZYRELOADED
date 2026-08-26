@@ -8,6 +8,6 @@ import org.mapstruct.Mapper;
 // TODO: @Mapper(componentModel = "spring") — ActivityRequest -> Activity, Activity -> ActivityResponse
 @Mapper(componentModel = "spring")
 public interface ActivityMapper {
-    Activity toEntity(ActivityRequest request);
+     Activity toEntity(ActivityRequest request);
     ActivityResponse toResponse(Activity activity);
 }
