@@ -1,11 +1,8 @@
 # Java / Maven build output
 **/target/
 
-# Config files with local credentials — catches BOTH extensions
-**/src/main/resources/application.yml
-**/src/main/resources/application.yaml
-
-# IDE — this is what was holding your real Gemini key
+# IDE — critical: this is where the REAL secret values now live
+# (in each Run Configuration's Environment Variables field), not in the yml
 .idea/
 *.iml
 .vscode/
@@ -17,3 +14,6 @@ dist/
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
