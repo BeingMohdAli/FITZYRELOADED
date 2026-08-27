@@ -68,11 +68,11 @@ public class GeminiClient {
                 }
             } catch (Exception e) {
                 // Malformed response shape — retrying won't help, fail fast
-                throw new ExternalServiceException("Failed to parse Gemini response");
+                throw new ExternalServiceException("Failed to parse Gemini response", lastError);
             }
         }
 
-        throw new ExternalServiceException("Gemini API unavailable after " + maxAttempts + " attempts");
+        throw new ExternalServiceException("Gemini API unavailable after " + maxAttempts + " attempts",lastError);
     }
 
     private String buildPrompt(ActivityTrackedEvent event) {
