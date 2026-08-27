@@ -28,7 +28,7 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
     private final RecommendationMapper recommendationMapper;
 
-    public RecommendationResponse generateAndSaveRecommendation(ActivityTrackedEvent event) {
+    public void generateAndSaveRecommendation(ActivityTrackedEvent event) {
         log.info("Generating recommendation for activity {}", event.activityId());
 
         GeminiGeneratedContent content;
@@ -51,7 +51,7 @@ public class RecommendationService {
         Recommendation saved = recommendationRepository.save(recommendation);
         log.info("Saved recommendation {} for activity {}", saved.getId(), saved.getActivityId());
 
-        return recommendationMapper.toResponse(saved);
+        recommendationMapper.toResponse(saved);
     }
 
     private GeminiGeneratedContent fallbackContent(ActivityTrackedEvent event) {
@@ -74,6 +74,7 @@ public class RecommendationService {
 
     public Page<RecommendationResponse> getRecommendationsForUser(String userId, Pageable pageable) {
         Page<Recommendation> recommendations = recommendationRepository.findByUserId(userId, pageable);
-        return recommendations.map(recommendationMapper::toResponse);
+        return recommendations.map(
+                r->recommendationMapper.toResponse(r));
     }
 }
