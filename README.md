@@ -9,42 +9,37 @@ This is a from-scratch architectural rebuild of an earlier monolith-leaning vers
 ## Architecture
 
 ```mermaid
-flowchart LR
+```mermaid
+flowchart TD
     FE["React Frontend<br/>(Vite, port 5174)"]
     GW["API Gateway<br/>(port 8080)"]
     EU["Eureka Server<br/>(port 8761)"]
     KC["Keycloak<br/>(port 8180)"]
-
-    US["user-service<br/>(port 8081)"]
-    AS["activity-service<br/>(port 8082)"]
-    RS["recommendation-service<br/>(port 8083)"]
-
-    PG[("PostgreSQL<br/>one DB per service")]
-    MQ{{"RabbitMQ"}}
     GM(["Gemini API"])
+    PG[("PostgreSQL<br/>one DB per service")]
 
-    FE -- "JWT" --> GW
-    GW -- "lb://" --> US
-    GW -- "lb://" --> AS
-    GW -- "lb://" --> RS
+    subgraph SVC["Backend Services"]
+        direction TB
+        US["user-service<br/>(port 8081)"]
+        AS["activity-service<br/>(port 8082)"]
+        MQ{{"RabbitMQ"}}
+        RS["recommendation-service<br/>(port 8083)"]
 
-    US <-. registers .-> EU
-    AS <-. registers .-> EU
-    RS <-. registers .-> EU
-    GW <-. registers .-> EU
+        AS -- "ActivityTrackedEvent" --> MQ
+        MQ -- "consumed by" --> RS
+    end
+
+    FE -- "JWT attached" --> GW
+    GW -- "routes via lb://" --> SVC
+    GW <-. "registers with" .-> EU
+    SVC <-. "registers with" .-> EU
 
     FE -. "login redirect" .-> KC
-    US -. "validates JWT" .-> KC
-    AS -. "validates JWT" .-> KC
-    RS -. "validates JWT" .-> KC
+    SVC -. "each validates JWT independently" .-> KC
 
-    US --> PG
-    AS --> PG
-    RS --> PG
-
-    AS -- "ActivityTrackedEvent" --> MQ
-    MQ -- "consumed by" --> RS
+    SVC --> PG
     RS -- "prompt" --> GM
+```
 ```
 
 **Request flow:** the frontend never talks to a service directly — every call goes through the gateway, which resolves the target service's live location via Eureka rather than a hardcoded port. Every service independently verifies the caller's JWT against Keycloak's public key; there's no implicit trust between the gateway and the services behind it.
