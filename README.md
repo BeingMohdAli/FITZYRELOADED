@@ -9,7 +9,6 @@ This is a from-scratch architectural rebuild of an earlier monolith-leaning vers
 ## Architecture
 
 ```mermaid
-```mermaid
 flowchart TD
     FE["React Frontend<br/>(Vite, port 5174)"]
     GW["API Gateway<br/>(port 8080)"]
@@ -31,15 +30,14 @@ flowchart TD
 
     FE -- "JWT attached" --> GW
     GW -- "routes via lb://" --> SVC
-    GW <-. "registers with" .-> EU
-    SVC <-. "registers with" .-> EU
+    GW <-. registers .-> EU
+    SVC <-. registers .-> EU
 
     FE -. "login redirect" .-> KC
-    SVC -. "each validates JWT independently" .-> KC
+    SVC -. "validates JWT" .-> KC
 
     SVC --> PG
     RS -- "prompt" --> GM
-```
 ```
 
 **Request flow:** the frontend never talks to a service directly — every call goes through the gateway, which resolves the target service's live location via Eureka rather than a hardcoded port. Every service independently verifies the caller's JWT against Keycloak's public key; there's no implicit trust between the gateway and the services behind it.
@@ -165,10 +163,6 @@ All requests go through the gateway at `http://localhost:8080`, with `Authorizat
 | `GET` | `/api/v1/activities?page=&size=&sort=` | Paginated list of the caller's activities |
 | `GET` | `/api/v1/recommendations/activity/{activityId}` | Get the AI recommendation for an activity (404 while still generating — intended for polling) |
 | `GET` | `/api/v1/recommendations?page=&size=` | Paginated list of the caller's recommendations |
-
----
-
-
 
 ---
 
