@@ -1,4 +1,4 @@
-# fitzy
+# fitzy 🏋️  AI-Powered Fitness Tracker
 
 AI-powered fitness tracker built as a Spring Boot microservices platform. Log a workout, and an event-driven pipeline hands it off to Gemini for a personalized coaching breakdown — improvements, forward-looking suggestions, and safety notes — without ever blocking the request that logged it.
 
