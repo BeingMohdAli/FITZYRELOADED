@@ -40,7 +40,8 @@ flowchart TD
     RS -- "prompt" --> GM
 ```
 
-
+## 🎥 See it in action
+### Project walkthrough — click to play
 https://github.com/user-attachments/assets/387f1226-3e08-40ca-82e6-03b6881a6b62
 
 
