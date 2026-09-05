@@ -40,6 +40,12 @@ flowchart TD
     RS -- "prompt" --> GM
 ```
 
+
+https://github.com/user-attachments/assets/387f1226-3e08-40ca-82e6-03b6881a6b62
+
+
+
+
 **Request flow:** the frontend never talks to a service directly — every call goes through the gateway, which resolves the target service's live location via Eureka rather than a hardcoded port. Every service independently verifies the caller's JWT against Keycloak's public key; there's no implicit trust between the gateway and the services behind it.
 
 **Async flow:** logging an activity returns immediately once saved. `activity-service` publishes an event to RabbitMQ and moves on — it has no idea `recommendation-service` even exists. `recommendation-service` picks the event up on its own schedule, calls Gemini, and persists the result. The frontend finds out it's ready by polling, not by blocking the original request.
